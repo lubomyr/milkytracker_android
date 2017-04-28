@@ -1,0 +1,4 @@
+include ':app'
+include ':SDL2'
+include ':zzip'
+include ':main'

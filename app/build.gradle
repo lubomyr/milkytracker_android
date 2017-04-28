@@ -1,0 +1,100 @@
+apply plugin: 'com.android.model.application'
+
+def lib_distribution_root = '../distribution'
+
+gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
+
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            SDL2 {
+                headers.srcDir "../SDL2/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("${lib_distribution_root}/SDL2/lib/${targetPlatform.getName()}/libSDL2.so")
+                }
+            }
+            zzip {
+                headers.srcDir "../zzip/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("${lib_distribution_root}/zzip/lib/${targetPlatform.getName()}/libzzip.so")
+                }
+            }
+            main {
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("${lib_distribution_root}/main/lib/${targetPlatform.getName()}/libmain.so")
+                }
+            }
+        }
+    }
+
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = '25.0.2'
+
+        defaultConfig {
+            applicationId = 'org.milkytracker.sdl'
+            minSdkVersion.apiLevel = 4
+            targetSdkVersion.apiLevel = 23
+        }
+        sources {
+            main {
+                jni {
+                    dependencies {
+                        //library 'SDL2' linkage 'shared'
+                        project ':main' linkage 'shared'
+                    }   
+                }   
+                jniLibs {
+                    source {
+                        //srcDir "${lib_distribution_root}/SDL2/lib"
+                        srcDir "${lib_distribution_root}/main/lib"
+                    }   
+                }   
+            }   
+        }   
+
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-rules.txt'))
+            }
+        }
+        productFlavors {
+            // for detailed abiFilter descriptions, refer to "Supported ABIs" @
+            // https://developer.android.com/ndk/guides/abis.html#sa
+            create("arm") {
+                ndk.abiFilters.add("armeabi")
+            }
+/*            create("arm7") {
+                ndk.abiFilters.add("armeabi-v7a")
+            }
+            create("arm8") {
+                ndk.abiFilters.add("arm64-v8a")
+            }*/
+            create("x86") {
+                ndk.abiFilters.add("x86")
+            }
+/*            create("x86-64") {
+                ndk.abiFilters.add("x86_64")
+            }
+            create("mips") {
+                ndk.abiFilters.add("mips")
+            }
+            create("mips-64") {
+                ndk.abiFilters.add("mips64")
+            }*/
+            // To include all cpu architectures, leaves abiFilters empty
+            //create("all")
+        }
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compile')) {
+        task.dependsOn ':main:distributeLib'
+    }
+}

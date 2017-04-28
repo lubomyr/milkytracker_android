@@ -1,0 +1,105 @@
+apply plugin: 'com.android.model.native'
+
+def lib_distribution_root = '../distribution'
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            SDL2 {
+                headers.srcDir "../SDL2/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("${lib_distribution_root}/SDL2/lib/${targetPlatform.getName()}/libSDL2.so")
+                }
+            }
+            zzip {
+                headers.srcDir "../zzip/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("${lib_distribution_root}/zzip/lib/${targetPlatform.getName()}/libzzip.so")
+                }
+            }
+        }
+    }
+
+    android {
+        compileSdkVersion = 24
+        buildToolsVersion = '23.0.3'
+
+        defaultConfig {
+            minSdkVersion.apiLevel = 13
+            targetSdkVersion.apiLevel = 24
+            versionCode = 1
+            versionName = '1.0'
+        }
+        ndk {
+            moduleName = 'main'
+            toolchain 'gcc'
+            cppFlags.addAll(["-D__LOWRES__"])
+            cppFlags.addAll(["-D__FORCE_SDL_AUDIO__"])
+            cppFlags.addAll(["-D_CRT_SECURE_NO_WARNINGS"])
+            cppFlags.addAll(["-DNOMINMAX"])
+            cppFlags.addAll(["-DMILKYTRACKER"])
+            cppFlags.addAll(["-I" + file("../SDL2/include/").absolutePath])
+            cppFlags.addAll(["-I" + file("../zzip/include/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/compression/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/compression/zziplib/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/fx/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/milkyplay/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/milkyplay/drivers/sdl/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/ppui/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/ppui/osinterface/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/ppui/osinterface/posix/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/ppui/sdl/").absolutePath])
+            cppFlags.addAll(["-I" + file("./src/tracker/").absolutePath])
+            ldLibs.addAll(["z"])
+            stl "stlport_static"
+        }
+
+        sources {
+            main {
+                jni {
+                    dependencies {
+                        library 'SDL2' linkage 'shared'
+                        library 'zzip' linkage 'shared'
+                    }
+                    source {
+                        srcDirs 'src/'
+                        exclude "compression/DecompressorLHA.cpp"
+                        exclude "midi/"
+                        exclude "milkyplay/drivers/"
+                        exclude "ppui/carbon/"
+                        exclude "ppui/cocoa/"
+                        exclude "ppui/haiku/"
+                        exclude "ppui/osinterface/carbon/"
+                        exclude "ppui/osinterface/cocoa/"
+                        exclude "ppui/osinterface/haiku/"
+                        exclude "ppui/osinterface/win32/"
+                        exclude "ppui/osinterface/wince/"
+                        exclude "ppui/osinterface/posix/PPMutex.cpp"
+                        exclude "ppui/win32/"
+                        exclude "ppui/wince/"
+                        exclude "tools/"
+                        exclude "tracker/carbon/"
+                        exclude "tracker/cocoa/"
+                        exclude "tracker/haiku/"
+                        exclude "tracker/win32/"
+                        exclude "tracker/wince/"
+                        srcDirs 'src/milkyplay/drivers/sdl/'
+                        srcDirs '../SDL2/src/main/android/'
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+// This is just copy out the header file and built lib into distribution
+// directory for clint application to use; it is a small overhead of this sample:
+//    both lib and app are put inside one project space [save maintenance time]
+task(distributeLib, type : Copy) {
+    // trigger build library
+    dependsOn assemble
+    into '../distribution/main/'
+    from('build/outputs/native/release/lib') {
+        into 'lib/'
+    }
+}

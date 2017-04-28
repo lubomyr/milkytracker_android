@@ -890,6 +890,10 @@ int main(int argc, char *argv[])
 	bool swapRedBlue = false, noSplash = false;
 	bool recVelocity = false;
 
+#if defined(__ANDROID__)
+	chdir("/sdcard");
+#endif
+
 	// Parse command line
 	while ( argc > 1 )
 	{

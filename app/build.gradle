@@ -37,7 +37,7 @@ model {
 
         defaultConfig {
             applicationId = 'org.milkytracker.sdl'
-            minSdkVersion.apiLevel = 4
+            minSdkVersion.apiLevel = 16
             targetSdkVersion.apiLevel = 23
         }
         sources {
@@ -66,19 +66,23 @@ model {
         productFlavors {
             // for detailed abiFilter descriptions, refer to "Supported ABIs" @
             // https://developer.android.com/ndk/guides/abis.html#sa
-            create("arm") {
+            create("arm_x86") {
+                ndk.abiFilters.add("armeabi")
+                ndk.abiFilters.add("x86")
+            }
+/*            create("arm") {
                 ndk.abiFilters.add("armeabi")
             }
-/*            create("arm7") {
+            create("arm7") {
                 ndk.abiFilters.add("armeabi-v7a")
             }
             create("arm8") {
                 ndk.abiFilters.add("arm64-v8a")
-            }*/
+            }
             create("x86") {
                 ndk.abiFilters.add("x86")
             }
-/*            create("x86-64") {
+            create("x86-64") {
                 ndk.abiFilters.add("x86_64")
             }
             create("mips") {
@@ -97,4 +101,10 @@ tasks.whenTaskAdded { task ->
     if (task.name.contains('compile')) {
         task.dependsOn ':main:distributeLib'
     }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:23.0.0'
+
 }

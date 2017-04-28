@@ -9,8 +9,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.lang.reflect.Method;
 
+import android.Manifest;
 import android.app.*;
 import android.content.*;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.BaseInputConnection;
@@ -29,6 +33,7 @@ import android.graphics.drawable.Drawable;
 import android.media.*;
 import android.hardware.*;
 import android.content.pm.ActivityInfo;
+import android.widget.Toast;
 
 /**
     SDL Activity
@@ -60,6 +65,8 @@ public class SDLActivity extends Activity {
     // Audio
     protected static AudioTrack mAudioTrack;
     protected static AudioRecord mAudioRecord;
+
+    private final int REQUEST_EXTERNAL_STORAGE = 1;
 
     /**
      * This method is called by SDL before loading the native shared libraries.
@@ -123,6 +130,10 @@ public class SDLActivity extends Activity {
         Log.v(TAG, "onCreate(): " + mSingleton);
         super.onCreate(savedInstanceState);
 
+        verifyStoragePermissions();
+    }
+
+    void onCreateSDL() {
         SDLActivity.initialize();
         // So we can call stuff from static callbacks
         mSingleton = this;
@@ -1015,6 +1026,41 @@ public class SDLActivity extends Activity {
         });
 
         return dialog;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE:
+                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission Granted
+                } else {
+                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_LONG).show();
+
+                }
+                onCreateSDL();
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    public void verifyStoragePermissions() {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+            return;
+        }
+        onCreateSDL();
     }
 }
 

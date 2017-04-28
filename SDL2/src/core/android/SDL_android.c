@@ -293,6 +293,14 @@ JNIEXPORT void JNICALL Java_org_milkytracker_sdl_SDLActivity_onNativeKeyUp(
     Android_OnKeyUp(keycode);
 }
 
+/* show Keyboard input */
+JNIEXPORT void JNICALL Java_org_milkytracker_sdl_SDLActivity_onNativeShowInputKeyboard(
+        JNIEnv* env, jclass jcls)
+{
+    /* Calling SDL_StopTextInput will take care of hiding the keyboard and cleaning up the DummyText widget */
+    SDL_StartTextInput();
+}
+
 /* Keyboard Focus Lost */
 JNIEXPORT void JNICALL Java_org_milkytracker_sdl_SDLActivity_onNativeKeyboardFocusLost(
                                     JNIEnv* env, jclass jcls)

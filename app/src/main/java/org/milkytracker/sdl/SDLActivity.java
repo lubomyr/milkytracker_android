@@ -13,9 +13,11 @@ import android.Manifest;
 import android.app.*;
 import android.content.*;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.view.*;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
@@ -66,6 +68,7 @@ public class SDLActivity extends Activity {
     protected static AudioTrack mAudioTrack;
     protected static AudioRecord mAudioRecord;
 
+    protected static boolean isKeyboardShown;
     private final int REQUEST_EXTERNAL_STORAGE = 1;
 
     /**
@@ -187,8 +190,23 @@ public class SDLActivity extends Activity {
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
 
+        // on-screen keyboard icon
+        Button buttonTextInput = new Button(this);
+        buttonTextInput.setBackgroundResource(R.drawable.keyboard);
+        int dimens = (int) convertDpToPixel(20);
+        buttonTextInput.setLayoutParams(new LinearLayout.LayoutParams(dimens, dimens));
+        buttonTextInput.setAlpha(0.5f);
+        buttonTextInput.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showOrHideSoftKeyboard();
+            }
+        });
+
+        mLayout.addView(buttonTextInput);
+
         setContentView(mLayout);
-        
+
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
 
@@ -387,6 +405,7 @@ public class SDLActivity extends Activity {
 
                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
+                    isKeyboardShown = false;
                 }
                 break;
             case COMMAND_SET_KEEP_SCREEN_ON:
@@ -436,6 +455,7 @@ public class SDLActivity extends Activity {
                                           int x, int y);
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
+    public static native void onNativeShowInputKeyboard();
     public static native void onNativeKeyboardFocusLost();
     public static native void onNativeMouse(int button, int action, float x, float y);
     public static native void onNativeTouch(int touchDevId, int pointerFingerId,
@@ -537,6 +557,7 @@ public class SDLActivity extends Activity {
 
             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(mTextEdit, 0);
+            isKeyboardShown = true;
         }
     }
 
@@ -1062,6 +1083,22 @@ public class SDLActivity extends Activity {
         }
         onCreateSDL();
     }
+
+    private void showOrHideSoftKeyboard() {
+        if (isKeyboardShown) {
+            onNativeKeyboardFocusLost();
+        } else {
+            onNativeShowInputKeyboard();
+        }
+    }
+
+    private float convertDpToPixel(float dp){
+        Resources resources = getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px;
+    }
+
 }
 
 /**

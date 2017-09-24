@@ -37,7 +37,7 @@ model {
 
         defaultConfig {
             applicationId = 'org.milkytracker.sdl'
-            minSdkVersion.apiLevel = 16
+            minSdkVersion.apiLevel = 21
             targetSdkVersion.apiLevel = 23
         }
         sources {

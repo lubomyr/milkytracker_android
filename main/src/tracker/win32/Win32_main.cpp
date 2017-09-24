@@ -857,10 +857,8 @@ LRESULT CALLBACK Ex_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 				break;
 			}
 
-			BYTE keyState[256];
-			WORD keyBuf[2] = {0,0};
-			GetKeyboardState((PBYTE)&keyState);
-			if (ToAscii(wParam, (lParam>>16)&255, (PBYTE)&keyState, keyBuf, 0) != 1)
+			WORD keyBuf[2] = { 0,0 };
+			if (ToAscii(wParam, (lParam>>16)&255, 0, keyBuf, 0) != 1)
 				keyBuf[0] = keyBuf[1] = 0;
 
 			QueryKeyModifiers();
@@ -872,10 +870,6 @@ LRESULT CALLBACK Ex_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			else if (GetAsyncKeyState(VK_RCONTROL)>>15)
 				wParam = VK_RCONTROL;			
 
-			// Menu key == VK_ALT
-			if (wParam == VK_MENU)
-				wParam = VK_ALT;
-
 			WORD chr[3] = {(WORD)wParam, (WORD)(lParam>>16)&255, keyBuf[0]}; 
 
 			EnableNumPad(chr, lParam);
@@ -883,11 +877,11 @@ LRESULT CALLBACK Ex_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			if (wParam == VK_CAPITAL)
 			{
 				chr[1] = 0x100;
+				BYTE keyState[256];
+				GetKeyboardState(keyState);
 				// Toggle caps lock
-				BYTE byKeybState[256];
-				GetKeyboardState(byKeybState);
-				byKeybState[wParam] = !(BOOL)GetKeyState(VK_CAPITAL);
-				SetKeyboardState(byKeybState);
+				keyState[wParam] = !(BOOL)GetKeyState(VK_CAPITAL);
+				SetKeyboardState(keyState);
 			}
 
 			PPEvent myEvent(eKeyDown, &chr, sizeof(chr));
@@ -902,14 +896,9 @@ LRESULT CALLBACK Ex_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
-		{			
-			if (wParam == VK_MENU)
-				wParam = VK_ALT;
-
-			BYTE keyState[256];
+		{
 			WORD keyBuf[2] = {0,0};
-			GetKeyboardState((PBYTE)&keyState);
-			if (ToAscii(wParam, (lParam>>16)&255, (PBYTE)&keyState, keyBuf, 0) != 1)
+			if (ToAscii(wParam, (lParam>>16)&255+256, 0, keyBuf, 0) != 1)
 				keyBuf[0] = keyBuf[1] = 0;
 
 			WORD chr[3] = {(WORD)wParam, (WORD)(lParam>>16)&255, keyBuf[0]}; 
@@ -1027,12 +1016,11 @@ LRESULT CALLBACK Ex_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		}
 
 		case WM_SIZE:
-			if (myDisplayDevice)
-				myDisplayDevice->adjustWindowSize();
-			break;
+			// Ignore WM_SIZE events sent during window creation, minimize and restore
+			return 0;
 
 		case WM_DESTROY:	
-			PostQuitMessage(0); 
+			PostQuitMessage(0);
 			break;
 
 /*		case WM_KILLFOCUS:
@@ -1116,8 +1104,8 @@ static BOOL AppInit(HINSTANCE hinst,int nCmdShow)
 
 	RECT rect;
 	rect.left = rect.top = 0;
-	rect.right = windowSize.width;
-	rect.bottom = windowSize.height;
+	rect.right = windowSize.width * scaleFactor;
+	rect.bottom = windowSize.height * scaleFactor;
  
 #ifdef FULLSCREEN
 	AdjustWindowRect(&rect, WS_POPUP, false);
@@ -1130,10 +1118,11 @@ static BOOL AppInit(HINSTANCE hinst,int nCmdShow)
 							 g_hinst,
 							 0);
 #else
-	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+	AdjustWindowRect(&rect, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 	hWnd = CreateWindow(c_szClassName,
 							 WINDOWTITLE,
-							 WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,
+							 WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+							 CW_USEDEFAULT,CW_USEDEFAULT,
 							 rect.right - rect.left, rect.bottom - rect.top,
 							 NULL,
 							 NULL,

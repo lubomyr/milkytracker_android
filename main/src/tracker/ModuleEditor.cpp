@@ -20,8 +20,6 @@
  *
  */
 
-#include <XIInstrument.h>
-#include <SampleLoaderGeneric.h>
 #include "ModuleEditor.h"
 #include "PatternEditor.h"
 #include "SampleEditor.h"
@@ -30,7 +28,6 @@
 #include "PlayerCriticalSection.h"
 #include "TrackerConfig.h"
 #include "PPSystem.h"
-#include "XModule.h"
 
 static const char validCharacters[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_!.";
 

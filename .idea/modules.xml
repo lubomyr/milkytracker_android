@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/SDL2/SDL2.iml" filepath="$PROJECT_DIR$/SDL2/SDL2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/main/main.iml" filepath="$PROJECT_DIR$/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/milkytracker-android.iml" filepath="$PROJECT_DIR$/milkytracker-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zzip/zzip.iml" filepath="$PROJECT_DIR$/zzip/zzip.iml" />
+    </modules>
+  </component>
+</project>

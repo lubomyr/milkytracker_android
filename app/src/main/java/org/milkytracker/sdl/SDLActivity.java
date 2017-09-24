@@ -14,6 +14,7 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.inputmethodservice.Keyboard;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.text.InputType;

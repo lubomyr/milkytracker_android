@@ -331,7 +331,8 @@ if(APPLE)
         # Compile the xib file
         add_custom_command(
             TARGET ${TARGET_NAME} POST_BUILD COMMAND ${IBTOOL} --errors
-            --warnings --notices --output-format human-readable-text --compile
+            --warnings --notices --output-format human-readable-text
+            --minimum-deployment-target 10.7 --compile
             ${RESOURCES_DIR}/${MACOSX_BUNDLE_NSMAIN_NIB_FILE}.nib ${XIB_FILE}
             COMMENT "Compiling ${XIB_FILE}"
         )
@@ -372,11 +373,11 @@ else()
     endif()
 endif()
 
-if(UNIX)
-    if(ZLIB_FOUND)
-        target_link_libraries(${TARGET_NAME} ${ZLIB_LIBRARIES})
-    endif()
+if(ZLIB_FOUND)
+    target_link_libraries(${TARGET_NAME} ${ZLIB_LIBRARIES})
+endif()
 
+if(UNIX)
     if(ZZIPLIB_FOUND)
         target_link_libraries(${TARGET_NAME} ${ZZIPLIB_LIBRARIES})
     endif()
@@ -398,7 +399,7 @@ target_link_libraries(
 if(APPLE OR WIN32)
     set(INSTALL_DEST .)
 else()
-    set(INSTALL_DEST bin)
+    set(INSTALL_DEST ${CMAKE_INSTALL_BINDIR})
 endif()
 
 install(TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_DEST})
